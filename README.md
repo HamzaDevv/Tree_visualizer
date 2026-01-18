@@ -1,78 +1,69 @@
-# 🧮 Numerical Integration Calculator
+# 🌲 Binary Tree Visualizer
 
-A robust C++ program for calculating definite integrals using numerical methods.
+A robust C++ program for visually printing binary trees in the terminal with ASCII art.
 
 ## Features
 
-- **Multiple Integration Methods**
-  - Trapezoidal Rule
-  - Simpson's Rule  
-  - Midpoint Rule
-
-- **Expression Parser**
-  - Supports multi-digit numbers and decimals
-  - Supports variables (`x`)
-  - Math functions: `sin`, `cos`, `tan`, `log`, `ln`, `sqrt`, `abs`, `exp`
-  - Constants: `pi`, `e`
-  - Operators: `+`, `-`, `*`, `/`, `^`
-
-- **User-Friendly Interface**
-  - Interactive menu with emoji icons
-  - Guided quick-start mode
-  - Built-in help and examples
-  - Input validation with helpful error messages
+- **Visual Tree Printing** - Displays trees with `/` and `\` branch connectors
+- **Multi-digit Support** - Handles numbers with multiple digits
+- **Negative Numbers** - Full support for negative values
+- **Edge Case Handling** - Empty trees, single nodes, skewed trees
+- **Interactive Menu** - Easy-to-use interface
+- **Memory Safe** - Proper cleanup with destructor
+- **Built-in Tests** - Verify functionality
 
 ## Compilation
 
 ```bash
-g++ -std=c++17 -Wall -o integration INTEGRATION.cpp
+g++ -std=c++17 -Wall -o printing_tree printing_tree.cpp
 ```
 
 ## Usage
 
 ```bash
-./integration           # Interactive mode
-./integration --test    # Run built-in tests
-./integration --help    # Show help
+./printing_tree           # Interactive mode
+./printing_tree --test    # Run tests
+./printing_tree --help    # Show help
 ```
 
-## Example Functions
+## Input Format
 
-| Expression | Description |
-|------------|-------------|
-| `x^2` | x squared |
-| `x^3 - 2*x + 5` | Cubic polynomial |
-| `sin(x)` | Sine of x (radians) |
-| `exp(-x^2)` | Gaussian-like curve |
-| `sqrt(1-x^2)` | Semi-circle |
-
-## Sample Session
+Enter tree data in **preorder** format. Use `-1` to indicate null nodes.
 
 ```
-🚀 QUICK START MODE
+Example: 5 3 1 -1 -1 4 -1 -1 7 6 -1 -1 8 -1 -1
 
-📝 STEP 1: Enter your function f(x)
-   👉 f(x) = x^2
-   ✅ Function accepted!
-
-📝 STEP 2: Enter the lower bound (a)
-   👉 a = 0
-
-📝 STEP 3: Enter the upper bound (b)
-   👉 b = 1
-
-📝 STEP 4: Enter precision
-   👉 n = 1000
-
-========== Integration Results ==========
-Function: f(x) = x^2
-Bounds: [0, 1]
------------------------------------------
-Trapezoidal Rule:  0.333333
-Simpson's Rule:    0.333333
-Midpoint Rule:     0.333333
-=========================================
+Creates:
+       5
+      / \
+     3   7
+    / \ / \
+   1  4 6  8
 ```
+
+## Sample Output
+
+```
+============
+   5    
+  / \   
+ /   \  
+ 3   7  
+/ \ / \ 
+1 4 6 8 
+============
+```
+
+## Menu Options
+
+| Option | Description |
+|--------|-------------|
+| 1 | Build tree from preorder input |
+| 2 | Print current tree |
+| 3 | Show tree statistics |
+| 4 | Clear tree |
+| 5 | Load example tree |
+| 0 | Exit |
 
 ## License
 

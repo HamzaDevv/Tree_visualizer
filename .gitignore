@@ -1,8 +1,8 @@
 # Compiled binaries
-integration
 printing_tree
 *.o
 *.out
+*.exe
 
 # IDE
 .vscode/
