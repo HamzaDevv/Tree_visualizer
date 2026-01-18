@@ -1,6 +1,5 @@
 #include <algorithm>
 #include <cmath>
-#include <iomanip>
 #include <iostream>
 #include <limits>
 #include <queue>
@@ -149,47 +148,69 @@ private:
     return 1 + std::max(getHeight(root->left), getHeight(root->right));
   }
 
-  // Get the width needed for a node's value
-  static int getNodeWidth(TreeNode *root) {
+  // Get maximum width of node values in tree
+  static int getMaxWidth(TreeNode *root) {
     if (!root)
-      return 0;
+      return 1;
     int current = std::to_string(root->val).length();
-    int leftMax = getNodeWidth(root->left);
-    int rightMax = getNodeWidth(root->right);
+    int leftMax = getMaxWidth(root->left);
+    int rightMax = getMaxWidth(root->right);
     return std::max({static_cast<int>(current), leftMax, rightMax});
   }
 
-  // Fill the display matrix
-  static void fillMatrix(TreeNode *root,
-                         std::vector<std::vector<std::string>> &matrix, int row,
-                         int left, int right) {
+  // Helper to center a string within a given width
+  static std::string centerStr(const std::string &s, int width) {
+    if (static_cast<int>(s.length()) >= width)
+      return s;
+    int padding = width - s.length();
+    int leftPad = padding / 2;
+    int rightPad = padding - leftPad;
+    return std::string(leftPad, ' ') + s + std::string(rightPad, ' ');
+  }
+
+  // Get all nodes at each level
+  static std::vector<std::vector<TreeNode *>> getLevels(TreeNode *root) {
+    std::vector<std::vector<TreeNode *>> levels;
     if (!root)
-      return;
+      return levels;
 
-    int mid = (left + right) / 2;
-    matrix[row][mid] = std::to_string(root->val);
+    std::queue<TreeNode *> q;
+    q.push(root);
 
-    if (root->left) {
-      // Draw left branch
-      int childMid = (left + mid - 1) / 2;
-      for (int i = mid - 1; i > childMid; i--) {
-        matrix[row + 1][i] = "/";
+    while (!q.empty()) {
+      int size = q.size();
+      std::vector<TreeNode *> level;
+
+      for (int i = 0; i < size; i++) {
+        TreeNode *node = q.front();
+        q.pop();
+        level.push_back(node);
+
+        if (node) {
+          q.push(node->left);
+          q.push(node->right);
+        }
       }
-      fillMatrix(root->left, matrix, row + 2, left, mid - 1);
+
+      // Check if all nulls
+      bool allNull = true;
+      for (auto n : level) {
+        if (n) {
+          allNull = false;
+          break;
+        }
+      }
+      if (allNull)
+        break;
+
+      levels.push_back(level);
     }
 
-    if (root->right) {
-      // Draw right branch
-      int childMid = (mid + 1 + right) / 2;
-      for (int i = mid + 1; i < childMid; i++) {
-        matrix[row + 1][i] = "\\";
-      }
-      fillMatrix(root->right, matrix, row + 2, mid + 1, right);
-    }
+    return levels;
   }
 
 public:
-  // Print tree with beautiful ASCII art
+  // Print tree with beautiful ASCII art - handles multi-digit numbers
   static void print(TreeNode *root) {
     if (!root) {
       std::cout << "\n┌─────────────────┐\n";
@@ -199,31 +220,134 @@ public:
     }
 
     int height = getHeight(root);
-    int width = static_cast<int>(std::pow(2, height)) * 2;
-    int matrixHeight = height * 2 - 1;
+    int maxNodeWidth = std::max(3, getMaxWidth(root) + 2); // Min 3 for branches
 
-    std::vector<std::vector<std::string>> matrix(
-        matrixHeight, std::vector<std::string>(width, " "));
+    // Calculate width needed for bottom level
+    int bottomLevelNodes = 1 << (height - 1); // 2^(height-1)
+    int totalWidth = bottomLevelNodes * maxNodeWidth * 2;
 
-    fillMatrix(root, matrix, 0, 0, width - 1);
+    auto levels = getLevels(root);
 
-    // Print with frame
     std::cout << "\n";
-    std::string border(width + 4, '=');
+    std::string border(totalWidth + 4, '=');
     std::cout << border << "\n";
 
-    for (const auto &row : matrix) {
-      std::cout << "  ";
-      for (const auto &cell : row) {
-        std::cout << cell;
+    for (size_t levelIdx = 0; levelIdx < levels.size(); levelIdx++) {
+      const auto &level = levels[levelIdx];
+      int nodesInLevel = level.size();
+      int spacing = totalWidth / nodesInLevel;
+
+      // Print node values
+      std::string nodeLine = "";
+      for (auto node : level) {
+        std::string val = node ? std::to_string(node->val) : " ";
+        nodeLine += centerStr(val, spacing);
       }
-      std::cout << "\n";
+      std::cout << "  " << nodeLine << "\n";
+
+      // Print branches (if not last level)
+      if (levelIdx < levels.size() - 1) {
+        int branchSpacing = spacing / 2;
+        int branchWidth = std::max(1, branchSpacing / 2);
+
+        // Draw multiple lines of branches for better visual
+        for (int line = 0; line < std::max(1, branchWidth / 2); line++) {
+          std::string branchLine = "";
+          for (auto node : level) {
+            std::string leftBranch = "";
+            std::string rightBranch = "";
+
+            if (node && node->left) {
+              leftBranch = "/";
+            } else {
+              leftBranch = " ";
+            }
+
+            if (node && node->right) {
+              rightBranch = "\\";
+            } else {
+              rightBranch = " ";
+            }
+
+            // Position branches
+            int leftPad = spacing / 2 - line - 2;
+            int midPad = line * 2 + 2;
+            int rightPad = spacing - leftPad - midPad - 2;
+
+            if (leftPad < 0)
+              leftPad = 0;
+            if (rightPad < 0)
+              rightPad = 0;
+
+            branchLine += std::string(leftPad, ' ') + leftBranch;
+            branchLine += std::string(midPad, ' ') + rightBranch;
+            branchLine += std::string(rightPad, ' ');
+          }
+          std::cout << "  " << branchLine << "\n";
+        }
+      }
     }
 
     std::cout << border << "\n";
   }
 
-  // Print compact representation
+  // Alternative visualization using box drawing characters
+  static void printBoxed(TreeNode *root) {
+    if (!root) {
+      std::cout << "\n[Empty Tree]\n";
+      return;
+    }
+
+    int height = getHeight(root);
+    int maxW = getMaxWidth(root);
+
+    auto levels = getLevels(root);
+
+    // Calculate spacing
+    int bottomNodes = 1 << (height - 1);
+    int cellWidth = maxW + 2;
+    int totalWidth = bottomNodes * cellWidth * 2;
+
+    std::cout << "\n";
+    std::cout << std::string(totalWidth, '-') << "\n";
+
+    for (size_t lvl = 0; lvl < levels.size(); lvl++) {
+      int nodesAtLevel = levels[lvl].size();
+      int spacing = totalWidth / nodesAtLevel;
+
+      // Print values
+      for (auto node : levels[lvl]) {
+        std::string val = node ? std::to_string(node->val) : "·";
+        std::cout << centerStr(val, spacing);
+      }
+      std::cout << "\n";
+
+      // Print connectors
+      if (lvl < levels.size() - 1) {
+        for (auto node : levels[lvl]) {
+          std::string conn = "";
+          if (node) {
+            if (node->left && node->right)
+              conn = "|+|";
+            else if (node->left)
+              conn = "/  ";
+            else if (node->right)
+              conn = "  \\";
+            else
+              conn = "   ";
+          } else {
+            conn = "  ";
+          }
+          std::cout << centerStr(conn, spacing);
+        }
+        std::cout << "\n";
+      }
+    }
+
+    std::cout << std::string(totalWidth, '-') << "\n";
+  }
+
+  // Print compact representation - better for large trees
   static void printCompact(TreeNode *root, const std::string &prefix = "",
                            bool isLeft = true) {
     if (!root)
