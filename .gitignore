@@ -1,0 +1,13 @@
+# Compiled binaries
+integration
+printing_tree
+*.o
+*.out
+
+# IDE
+.vscode/
+.idea/
+
+# OS
+.DS_Store
+Thumbs.db
